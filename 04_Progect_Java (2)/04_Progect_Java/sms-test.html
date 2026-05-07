@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短信验证码模块测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0e1a 0%, #0d1526 100%);
+            min-height: 100vh;
+            padding: 40px;
+            color: #e5e7eb;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 32px;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .test-section {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .test-section h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .test-section h2::before {
+            content: '';
+            width: 4px;
+            height: 18px;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            border-radius: 2px;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .test-card {
+            background: rgba(20, 30, 50, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(107, 114, 128, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .test-card:hover {
+            border-color: rgba(0, 212, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .test-card h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            color: #9ca3af;
+        }
+
+        .test-card p {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .test-card button {
+            width: 100%;
+            padding: 10px 16px;
+            background: rgba(0, 212, 255, 0.12);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            color: #00d4ff;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .test-card button:hover {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: rgba(0, 212, 255, 0.5);
+        }
+
+        .result {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            display: none;
+        }
+
+        .result.success {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+            display: block;
+        }
+
+        .result.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            display: block;
+        }
+
+        .result.info {
+            background: rgba(0, 212, 255, 0.15);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: #00d4ff;
+            display: block;
+        }
+
+        .stats {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(20, 30, 50, 0.8);
+            border-radius: 10px;
+        }
+
+        .stats h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            color: #9ca3af;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .stat-item .value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #00d4ff;
+        }
+
+        .stat-item .label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .test-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(20, 30, 50, 0.85);
+            border: 1px solid rgba(107, 114, 128, 0.25);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #f3f4f6;
+            margin-bottom: 12px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .test-input:focus {
+            border-color: #00d4ff;
+        }
+
+        .test-input::placeholder {
+            color: #4b5563;
+        }
+
+        .api-doc {
+            background: rgba(20, 30, 50, 0.8);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 16px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            color: #9ca3af;
+            overflow-x: auto;
+        }
+
+        .api-doc pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .api-doc .method {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .api-doc .url {
+            color: #22c55e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>短信验证码模块单元测试</h1>
+
+        <div class="test-section">
+            <h2>手机号验证测试</h2>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>有效手机号验证</h3>
+                    <p>测试中国大陆11位手机号格式验证</p>
+                    <input type="tel" class="test-input" id="validPhone" placeholder="输入有效手机号" value="13812345678">
+                    <button onclick="testValidPhone()">测试有效手机号</button>
+                    <div class="result" id="validPhoneResult"></div>
+                </div>
+                <div class="test-card">
+                    <h3>无效手机号验证</h3>
+                    <p>测试非11位或格式不正确的手机号</p>
+                    <input type="tel" class="test-input" id="invalidPhone" placeholder="输入无效手机号" value="123456">
+                    <button onclick="testInvalidPhone()">测试无效手机号</button>
+                    <div class="result" id="invalidPhoneResult"></div>
+                </div>
+                <div class="test-card">
+                    <h3>空手机号验证</h3>
+                    <p>测试空手机号输入</p>
+                    <button onclick="testEmptyPhone()">测试空手机号</button>
+                    <div class="result" id="emptyPhoneResult"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>验证码发送测试</h2>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>发送验证码</h3>
+                    <p>测试向有效手机号发送验证码</p>
+                    <input type="tel" class="test-input" id="sendPhone" placeholder="输入手机号" value="13812345678">
+                    <button onclick="testSendCode()">发送验证码</button>
+                    <div class="result" id="sendCodeResult"></div>
+                </div>
+                <div class="test-card">
+                    <h3>发送频率限制</h3>
+                    <p>测试60秒内重复发送限制</p>
+                    <button onclick="testRateLimit()">测试频率限制</button>
+                    <div class="result" id="rateLimitResult"></div>
+                </div>
+                <div class="test-card">
+                    <h3>获取发送状态</h3>
+                    <p>查询当前手机号的发送状态</p>
+                    <input type="tel" class="test-input" id="statusPhone" placeholder="输入手机号" value="13812345678">
+                    <button onclick="testSendStatus()">获取状态</button>
+                    <div class="result" id="sendStatusResult"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>验证码验证测试</h2>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>正确验证码验证</h3>
+                    <p>测试使用正确验证码验证</p>
+                    <input type="tel" class="test-input" id="verifyPhone" placeholder="手机号" value="13812345678">
+                    <input type="text" class="test-input" id="verifyCode" placeholder="验证码">
+                    <button onclick="testVerifyCode()">验证验证码</button>
+                    <div class="result" id="verifyResult"></div>
+                </div>
+                <div class="test-card">
+                    <h3>错误验证码验证</h3>
+                    <p>测试使用错误验证码验证</p>
+                    <button onclick="testWrongCode()">测试错误验证码</button>
+                    <div class="result" id="wrongCodeResult"></div>
+                </div>
+                <div class="test-card">
+                    <h3>获取验证码状态</h3>
+                    <p>查询验证码的当前状态</p>
+                    <input type="tel" class="test-input" id="codeStatusPhone" placeholder="输入手机号" value="13812345678">
+                    <button onclick="testCodeStatus()">获取验证码状态</button>
+                    <div class="result" id="codeStatusResult"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>模块统计信息</h2>
+            <div class="stats">
+                <h3>实时统计数据</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="value" id="statTotal">0</div>
+                        <div class="label">总验证码数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value" id="statActive">0</div>
+                        <div class="label">有效验证码</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value" id="statExpired">0</div>
+                        <div class="label">已过期</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="value" id="statVerified">0</div>
+                        <div class="label">已验证</div>
+                    </div>
+                </div>
+                <button style="margin-top: 12px; width: auto;" onclick="updateStats()">刷新统计</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>接口文档</h2>
+            
+            <div class="api-doc">
+                <pre><span class="method">POST</span> <span class="url">/api/sms/send</span>
+发送短信验证码
+
+请求参数:
+{
+    "phone": "string (必填, 11位手机号)",
+    "codeLength": "number (可选, 默认6)"
+}
+
+成功响应:
+{
+    "success": true,
+    "message": "验证码发送成功",
+    "expireMinutes": 5
+}
+
+失败响应:
+{
+    "success": false,
+    "error": "INVALID_PHONE | PHONE_RATE_LIMITED | PHONE_DAILY_LIMIT",
+    "message": "错误描述"
+}</pre>
+            </div>
+
+            <div class="api-doc">
+                <pre><span class="method">POST</span> <span class="url">/api/sms/verify</span>
+验证短信验证码
+
+请求参数:
+{
+    "phone": "string (必填, 11位手机号)",
+    "code": "string (必填, 验证码)"
+}
+
+成功响应:
+{
+    "success": true,
+    "message": "验证成功",
+    "verifiedAt": "timestamp"
+}
+
+失败响应:
+{
+    "success": false,
+    "error": "CODE_NOT_FOUND | CODE_EXPIRED | CODE_MISMATCH | CODE_MAX_ATTEMPTS",
+    "message": "错误描述"
+}</pre>
+            </div>
+
+            <div class="api-doc">
+                <pre><span class="method">GET</span> <span class="url">/api/sms/status/{phone}</span>
+查询验证码状态
+
+成功响应:
+{
+    "sent": true|false,
+    "status": "not_sent | pending | verified | expired",
+    "remainingAttempts": number,
+    "remainingSeconds": number
+}</pre>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        const smsVerifier = new SmsVerification({
+            codeLength: 6,
+            codeExpireMinutes: 5,
+            maxVerifyAttempts: 5,
+            lockoutMinutes: 15,
+            sendIntervalSeconds: 60,
+            dailySendLimit: 10
+        });
+
+        let lastSentCode = null;
+
+        function showResult(id, message, type) {
+            const result = document.getElementById(id);
+            result.textContent = message;
+            result.className = `result ${type}`;
+        }
+
+        function testValidPhone() {
+            const phone = document.getElementById('validPhone').value;
+            const result = smsVerifier.validatePhoneNumber(phone);
+            if (result.valid) {
+                showResult('validPhoneResult', `验证通过: ${result.phone}`, 'success');
+            } else {
+                showResult('validPhoneResult', `验证失败: ${result.error}`, 'error');
+            }
+        }
+
+        function testInvalidPhone() {
+            const phone = document.getElementById('invalidPhone').value;
+            const result = smsVerifier.validatePhoneNumber(phone);
+            if (!result.valid) {
+                showResult('invalidPhoneResult', `正确识别无效手机号: ${result.error}`, 'success');
+            } else {
+                showResult('invalidPhoneResult', `未能识别无效手机号`, 'error');
+            }
+        }
+
+        function testEmptyPhone() {
+            const result = smsVerifier.validatePhoneNumber('');
+            if (!result.valid) {
+                showResult('emptyPhoneResult', `正确识别空手机号: ${result.error}`, 'success');
+            } else {
+                showResult('emptyPhoneResult', `未能识别空手机号`, 'error');
+            }
+        }
+
+        async function testSendCode() {
+            const phone = document.getElementById('sendPhone').value;
+            try {
+                const result = await smsVerifier.sendCode(phone);
+                const status = smsVerifier.getCodeStatus(phone);
+                lastSentCode = status.sent ? '已生成验证码（控制台可见）' : null;
+                showResult('sendCodeResult', `${result.message}，有效期${result.expireMinutes}分钟`, 'success');
+                console.log(`[测试] 验证码已发送到 ${phone}`);
+            } catch (error) {
+                showResult('sendCodeResult', error.message, 'error');
+            }
+        }
+
+        async function testRateLimit() {
+            const phone = '13812345678';
+            try {
+                await smsVerifier.sendCode(phone);
+                showResult('rateLimitResult', '第一次发送成功，现在测试频率限制...', 'info');
+                
+                setTimeout(async () => {
+                    try {
+                        await smsVerifier.sendCode(phone);
+                        showResult('rateLimitResult', '频率限制未生效', 'error');
+                    } catch (error) {
+                        if (error.code === 'PHONE_RATE_LIMITED') {
+                            showResult('rateLimitResult', `频率限制生效: ${error.message}`, 'success');
+                        } else {
+                            showResult('rateLimitResult', error.message, 'error');
+                        }
+                    }
+                }, 500);
+            } catch (error) {
+                showResult('rateLimitResult', error.message, 'info');
+            }
+        }
+
+        function testSendStatus() {
+            const phone = document.getElementById('statusPhone').value;
+            const status = smsVerifier.getSendStatus(phone);
+            if (status.valid !== false) {
+                showResult('sendStatusResult', 
+                    `可发送: ${status.canSend}\n今日已发送: ${status.dailySent}/${status.dailyLimit}`, 
+                    status.canSend ? 'success' : 'info');
+            } else {
+                showResult('sendStatusResult', '无效手机号', 'error');
+            }
+        }
+
+        async function testVerifyCode() {
+            const phone = document.getElementById('verifyPhone').value;
+            const code = document.getElementById('verifyCode').value;
+            try {
+                const result = await smsVerifier.verifyCode(phone, code);
+                showResult('verifyResult', result.message, 'success');
+            } catch (error) {
+                showResult('verifyResult', error.message, 'error');
+            }
+        }
+
+        async function testWrongCode() {
+            const phone = '13812345678';
+            const wrongCode = '000000';
+            try {
+                await smsVerifier.verifyCode(phone, wrongCode);
+                showResult('wrongCodeResult', '错误验证码验证通过（异常）', 'error');
+            } catch (error) {
+                if (error.code === 'CODE_NOT_FOUND') {
+                    showResult('wrongCodeResult', `请先发送验证码: ${error.message}`, 'info');
+                } else if (error.code === 'CODE_MISMATCH') {
+                    showResult('wrongCodeResult', `正确识别错误验证码: ${error.message}`, 'success');
+                } else {
+                    showResult('wrongCodeResult', error.message, 'error');
+                }
+            }
+        }
+
+        function testCodeStatus() {
+            const phone = document.getElementById('codeStatusPhone').value;
+            const status = smsVerifier.getCodeStatus(phone);
+            if (status.valid !== false) {
+                let message = `发送状态: ${status.sent ? '已发送' : '未发送'}`;
+                if (status.status) message += `\n状态: ${status.status}`;
+                if (status.remainingAttempts !== undefined) message += `\n剩余尝试次数: ${status.remainingAttempts}`;
+                if (status.remainingSeconds !== undefined) message += `\n剩余时间: ${status.remainingSeconds}秒`;
+                showResult('codeStatusResult', message, 'success');
+            } else {
+                showResult('codeStatusResult', '无效手机号', 'error');
+            }
+        }
+
+        function updateStats() {
+            const stats = smsVerifier.getStats();
+            document.getElementById('statTotal').textContent = stats.total;
+            document.getElementById('statActive').textContent = stats.active;
+            document.getElementById('statExpired').textContent = stats.expired;
+            document.getElementById('statVerified').textContent = stats.verified;
+        }
+
+        setInterval(updateStats, 2000);
+        updateStats();
+    </script>
+</body>
+</html>

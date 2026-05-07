@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinQuantDash - 智能量化投研平台</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-text">FinQuantDash</span>
+            </div>
+            <div class="nav-actions">
+                <button class="nav-login-btn" id="navLoginBtn">登录</button>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="background">
+        <div class="gradient-overlay"></div>
+        <div class="grid-container"></div>
+        <canvas id="particles"></canvas>
+        <canvas id="dataCurve"></canvas>
+    </div>
+    
+    <div class="login-container">
+        <div class="left-section">
+            <div class="brand">
+                <h1 class="brand-logo">
+                    <span class="logo-part1">FinQuant</span><span class="logo-part2">Dash</span>
+                </h1>
+                <p class="brand-subtitle">FinQuantDash —— 你的智能量化投研伙伴</p>
+            </div>
+            
+            <div class="brand-motto">
+                <p>告别主观臆断，让数据驱动每一次投资决策。我们为专业投资者打造集数据回测、策略开发、实时交易于一体的高效、严谨的量化投研闭环。</p>
+            </div>
+            
+            <div class="kline-animation">
+                <svg viewBox="0 0 280 120" class="kline-svg">
+                    <defs>
+                        <linearGradient id="klineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:0.2" />
+                            <stop offset="50%" style="stop-color:#00d4ff;stop-opacity:0.6" />
+                            <stop offset="100%" style="stop-color:#00d4ff;stop-opacity:0.3" />
+                        </linearGradient>
+                        <filter id="glow">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <path d="M10,100 Q40,80 70,90 T130,60 T190,75 T250,50 T270,65" 
+                          fill="none" stroke="url(#klineGradient)" stroke-width="2" stroke-linecap="round" filter="url(#glow)"/>
+                    <circle cx="10" cy="100" r="3" fill="#00d4ff" opacity="0.8">
+                        <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="70" cy="90" r="3" fill="#00d4ff" opacity="0.8">
+                        <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+                    </circle>
+                    <circle cx="130" cy="60" r="3" fill="#00d4ff" opacity="0.8">
+                        <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite" begin="0.6s"/>
+                    </circle>
+                    <circle cx="190" cy="75" r="3" fill="#00d4ff" opacity="0.8">
+                        <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite" begin="0.9s"/>
+                    </circle>
+                    <circle cx="250" cy="50" r="3" fill="#00d4ff" opacity="0.8">
+                        <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite" begin="1.2s"/>
+                    </circle>
+                    <circle cx="270" cy="65" r="3" fill="#00d4ff" opacity="0.8">
+                        <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite" begin="1.5s"/>
+                    </circle>
+                </svg>
+            </div>
+            
+            <p class="copyright">© 2026 FinQuantDash. All rights reserved.</p>
+        </div>
+        
+        <div class="right-section">
+            <div class="auth-card">
+                <div class="auth-content auth-panel" id="loginPanel">
+                    <div class="auth-header">
+                        <h2>用户登录</h2>
+                        <p>欢迎回来，请输入您的账号信息登录量化决策平台</p>
+                        <div class="divider"></div>
+                    </div>
+                    
+                    <form class="auth-form" id="loginForm">
+                        <div class="form-group">
+                            <label for="username">账号 / 手机号</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="username" placeholder="请输入账号或手机号" required>
+                                <i class="fa-regular fa-user"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password">登录密码</label>
+                            <div class="input-wrapper">
+                                <input type="password" id="password" placeholder="请输入登录密码" required>
+                                <i class="fa-solid fa-eye" id="passwordToggle"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="form-options">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="rememberMe">
+                                <span class="checkmark"></span>
+                                <span>记住账号</span>
+                            </label>
+                            <a href="#" class="forgot-password">忘记密码？</a>
+                        </div>
+                        
+                        <button type="submit" class="auth-btn login-btn">
+                            <span class="btn-text">登录</span>
+                            <span class="btn-loader"><i class="fa-solid fa-spinner fa-spin"></i> 登录中...</span>
+                        </button>
+                        
+                        <div class="form-links">
+                            <a href="#" class="register-link" id="registerLink">注册账户</a>
+                        </div>
+                    </form>
+                    
+                    <div class="divider-wrapper">
+                        <div class="divider-line"></div>
+                        <span class="divider-text">其他登录方式</span>
+                        <div class="divider-line"></div>
+                    </div>
+                    
+                    <div class="alternative-login">
+                        <button class="alt-login-btn" id="smsLogin">
+                            <i class="fa-solid fa-message-sms"></i>
+                            <span>短信验证码登录</span>
+                        </button>
+                        <button class="alt-login-btn" id="institutionLogin">
+                            <i class="fa-solid fa-building"></i>
+                            <span>机构账号登录</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="auth-content auth-panel" id="institutionPanel">
+                    <div class="auth-header">
+                        <h2>机构账号登录</h2>
+                        <p>欢迎机构用户登录量化决策平台管理后台</p>
+                        <div class="divider"></div>
+                    </div>
+                    
+                    <form class="auth-form institution-form" id="institutionForm">
+                        <div class="form-group">
+                            <label for="instAccount">机构账号</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="instAccount" placeholder="请输入机构账号" required>
+                                <i class="fa-solid fa-building"></i>
+                            </div>
+                            <span class="error-message" id="instAccountError"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="instPassword">登录密码</label>
+                            <div class="input-wrapper">
+                                <input type="password" id="instPassword" placeholder="请输入登录密码" required>
+                                <i class="fa-solid fa-eye" id="instPasswordToggle"></i>
+                            </div>
+                            <span class="error-message" id="instPasswordError"></span>
+                        </div>
+                        
+                        <div class="form-options">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="instRememberMe">
+                                <span class="checkmark"></span>
+                                <span>记住账号</span>
+                            </label>
+                            <a href="#" class="forgot-password" id="instForgotPassword">忘记密码？</a>
+                        </div>
+                        
+                        <button type="submit" class="auth-btn institution-login-btn">
+                            <span class="btn-text">登录管理后台</span>
+                            <span class="btn-loader"><i class="fa-solid fa-spinner fa-spin"></i> 登录中...</span>
+                        </button>
+                        
+                        <div class="form-links">
+                            <a href="#" class="back-to-account-login" id="backToNormalLogin">返回个人登录</a>
+                            <span class="link-divider">|</span>
+                            <a href="#" class="institution-register-link" id="instRegisterLink">机构注册</a>
+                        </div>
+                    </form>
+                    
+                    <div class="security-info">
+                        <i class="fa-solid fa-shield-check"></i>
+                        <span>已启用HTTPS加密传输 | 多重安全防护</span>
+                    </div>
+                </div>
+                
+                <div class="auth-content auth-panel" id="institutionRegisterPanel">
+                    <div class="auth-header">
+                        <h2>机构注册</h2>
+                        <p>填写机构信息完成注册，提交后将进入审核流程</p>
+                        <div class="divider"></div>
+                    </div>
+                    
+                    <form class="auth-form inst-register-form" id="institutionRegisterForm" enctype="multipart/form-data">
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fa-solid fa-building"></i>
+                                机构基本信息
+                            </h3>
+                            
+                            <div class="form-group">
+                                <label for="regInstName">机构名称 <span class="required">*</span></label>
+                                <div class="input-wrapper">
+                                    <input type="text" id="regInstName" placeholder="请输入机构全称" required>
+                                    <i class="fa-solid fa-building"></i>
+                                </div>
+                                <span class="error-message" id="regInstNameError"></span>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group flex-1">
+                                    <label for="regInstCreditCode">统一社会信用代码 <span class="required">*</span></label>
+                                    <div class="input-wrapper">
+                                        <input type="text" id="regInstCreditCode" placeholder="请输入统一社会信用代码" required>
+                                        <i class="fa-solid fa-id-card"></i>
+                                    </div>
+                                    <span class="error-message" id="regInstCreditCodeError"></span>
+                                </div>
+                                
+                                <div class="form-group flex-1">
+                                    <label for="regInstType">机构类型 <span class="required">*</span></label>
+                                    <div class="input-wrapper">
+                                        <select id="regInstType" required>
+                                            <option value="">请选择机构类型</option>
+                                            <option value="fund">基金公司</option>
+                                            <option value="securities">证券公司</option>
+                                            <option value="insurance">保险公司</option>
+                                            <option value="bank">银行</option>
+                                            <option value="trust">信托公司</option>
+                                            <option value="other">其他金融机构</option>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </div>
+                                    <span class="error-message" id="regInstTypeError"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group flex-1">
+                                    <label for="regInstIndustry">所属行业 <span class="required">*</span></label>
+                                    <div class="input-wrapper">
+                                        <select id="regInstIndustry" required>
+                                            <option value="">请选择所属行业</option>
+                                            <option value="finance">金融服务</option>
+                                            <option value="investment">投资管理</option>
+                                            <option value="asset">资产管理</option>
+                                            <option value="tech">金融科技</option>
+                                            <option value="other">其他</option>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </div>
+                                    <span class="error-message" id="regInstIndustryError"></span>
+                                </div>
+                                
+                                <div class="form-group flex-1">
+                                    <label for="regInstPhone">联系电话 <span class="required">*</span></label>
+                                    <div class="input-wrapper">
+                                        <input type="tel" id="regInstPhone" placeholder="请输入机构联系电话" required>
+                                        <i class="fa-solid fa-phone"></i>
+                                    </div>
+                                    <span class="error-message" id="regInstPhoneError"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="regInstEmail">电子邮箱 <span class="required">*</span></label>
+                                <div class="input-wrapper">
+                                    <input type="email" id="regInstEmail" placeholder="请输入机构邮箱" required>
+                                    <i class="fa-solid fa-envelope"></i>
+                                </div>
+                                <span class="error-message" id="regInstEmailError"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="regInstAddress">注册地址 <span class="required">*</span></label>
+                                <div class="input-wrapper">
+                                    <textarea id="regInstAddress" placeholder="请输入机构注册地址" rows="3" required></textarea>
+                                </div>
+                                <span class="error-message" id="regInstAddressError"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fa-solid fa-user-tie"></i>
+                                管理员信息
+                            </h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group flex-1">
+                                    <label for="regAdminName">管理员姓名 <span class="required">*</span></label>
+                                    <div class="input-wrapper">
+                                        <input type="text" id="regAdminName" placeholder="请输入管理员姓名" required>
+                                        <i class="fa-solid fa-user"></i>
+                                    </div>
+                                    <span class="error-message" id="regAdminNameError"></span>
+                                </div>
+                                
+                                <div class="form-group flex-1">
+                                    <label for="regAdminPhone">手机号码 <span class="required">*</span></label>
+                                    <div class="input-wrapper">
+                                        <input type="tel" id="regAdminPhone" placeholder="请输入手机号码" required>
+                                        <i class="fa-solid fa-mobile-screen"></i>
+                                    </div>
+                                    <span class="error-message" id="regAdminPhoneError"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="regAdminPassword">登录密码 <span class="required">*</span></label>
+                                <div class="input-wrapper">
+                                    <input type="password" id="regAdminPassword" placeholder="请设置登录密码" required>
+                                    <i class="fa-solid fa-eye" id="regAdminPasswordToggle"></i>
+                                </div>
+                                <span class="error-message" id="regAdminPasswordError"></span>
+                                <span class="password-hint">密码需包含字母和数字，长度8-20位</span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="regAdminConfirmPassword">确认密码 <span class="required">*</span></label>
+                                <div class="input-wrapper">
+                                    <input type="password" id="regAdminConfirmPassword" placeholder="请再次输入密码" required>
+                                    <i class="fa-solid fa-eye" id="regAdminConfirmPasswordToggle"></i>
+                                </div>
+                                <span class="error-message" id="regAdminConfirmPasswordError"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fa-solid fa-shield-check"></i>
+                                身份验证
+                            </h3>
+                            
+                            <div class="form-group">
+                                <label for="regSmsCode">手机验证码 <span class="required">*</span></label>
+                                <div class="input-wrapper">
+                                    <input type="text" id="regSmsCode" placeholder="请输入验证码" required>
+                                    <button type="button" class="sms-btn" id="regInstSendSmsBtn">发送验证码</button>
+                                </div>
+                                <span class="error-message" id="regSmsCodeError"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="regEmailCode">邮箱验证码 <span class="required">*</span></label>
+                                <div class="input-wrapper">
+                                    <input type="text" id="regEmailCode" placeholder="请输入验证码" required>
+                                    <button type="button" class="sms-btn" id="regInstSendEmailBtn">发送验证码</button>
+                                </div>
+                                <span class="error-message" id="regEmailCodeError"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fa-solid fa-file-upload"></i>
+                                资质材料上传
+                            </h3>
+                            
+                            <div class="form-group">
+                                <label for="regLicenseFile">营业执照扫描件 <span class="required">*</span></label>
+                                <div class="upload-wrapper" id="licenseUpload">
+                                    <div class="upload-area">
+                                        <i class="fa-solid fa-file-image"></i>
+                                        <p>点击或拖拽上传营业执照扫描件</p>
+                                        <span class="upload-hint">支持 JPG、PNG、PDF 格式，文件大小不超过10MB</span>
+                                    </div>
+                                    <input type="file" id="regLicenseFile" accept=".jpg,.jpeg,.png,.pdf" required>
+                                    <div class="upload-preview" id="licensePreview"></div>
+                                </div>
+                                <span class="error-message" id="regLicenseError"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="regLegalFile">法人身份证明 <span class="required">*</span></label>
+                                <div class="upload-wrapper" id="legalUpload">
+                                    <div class="upload-area">
+                                        <i class="fa-solid fa-file-image"></i>
+                                        <p>点击或拖拽上传法人身份证明</p>
+                                        <span class="upload-hint">支持 JPG、PNG、PDF 格式，文件大小不超过10MB</span>
+                                    </div>
+                                    <input type="file" id="regLegalFile" accept=".jpg,.jpeg,.png,.pdf" required>
+                                    <div class="upload-preview" id="legalPreview"></div>
+                                </div>
+                                <span class="error-message" id="regLegalError"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-options">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="regInstAgreeTerms" required>
+                                <span class="checkmark"></span>
+                                <span>我已阅读并同意<a href="#" class="terms-link">《机构服务协议》</a>和<a href="#" class="terms-link">《隐私政策》</a></span>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="auth-btn inst-register-btn">
+                            <span class="btn-text">提交注册申请</span>
+                            <span class="btn-loader"><i class="fa-solid fa-spinner fa-spin"></i> 提交中...</span>
+                        </button>
+                        
+                        <div class="form-links">
+                            <a href="#" class="back-to-inst-login" id="backToInstLogin">返回机构登录</a>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="auth-content auth-panel" id="smsLoginPanel">
+                    <div class="auth-header">
+                        <h2>短信验证码登录</h2>
+                        <p>使用手机号码快速登录量化决策平台</p>
+                        <div class="divider"></div>
+                    </div>
+                    
+                    <form class="auth-form sms-login-form" id="smsLoginForm">
+                        <div class="form-group">
+                            <label for="smsPhone">手机号码</label>
+                            <div class="input-wrapper">
+                                <input type="tel" id="smsPhone" placeholder="请输入手机号码" required>
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                            <span class="error-message" id="smsPhoneError"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="smsCode">短信验证码</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="smsCode" placeholder="请输入验证码" required>
+                                <button type="button" class="sms-btn" id="smsSendBtn">发送验证码</button>
+                            </div>
+                            <span class="error-message" id="smsCodeError"></span>
+                        </div>
+                        
+                        <div class="form-options">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="smsRememberMe">
+                                <span class="checkmark"></span>
+                                <span>记住账号</span>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="auth-btn sms-login-btn">
+                            <span class="btn-text">登录</span>
+                            <span class="btn-loader"><i class="fa-solid fa-spinner fa-spin"></i> 登录中...</span>
+                        </button>
+                        
+                        <div class="form-links">
+                            <a href="#" class="back-to-account-login" id="backToAccountLogin">返回账号密码登录</a>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="auth-content auth-panel" id="registerPanel">
+                    <div class="auth-header">
+                        <h2>用户注册</h2>
+                        <p>创建您的智能量化投研平台账号</p>
+                        <div class="divider"></div>
+                    </div>
+                    
+                    <form class="auth-form register-form" id="registerForm">
+                        <div class="form-group">
+                            <label for="regUsername">用户名</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="regUsername" placeholder="请输入用户名" required>
+                                <i class="fa-regular fa-user"></i>
+                            </div>
+                            <span class="error-message" id="regUsernameError"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regPhone">手机号码</label>
+                            <div class="input-wrapper">
+                                <input type="tel" id="regPhone" placeholder="请输入手机号码" required>
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                            <span class="error-message" id="regPhoneError"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regPassword">登录密码</label>
+                            <div class="input-wrapper">
+                                <input type="password" id="regPassword" placeholder="请输入登录密码" required>
+                                <i class="fa-solid fa-eye" id="regPasswordToggle"></i>
+                            </div>
+                            <span class="error-message" id="regPasswordError"></span>
+                            <span class="password-hint">密码需包含字母、数字，长度6-20位</span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regConfirmPassword">确认密码</label>
+                            <div class="input-wrapper">
+                                <input type="password" id="regConfirmPassword" placeholder="请再次输入密码" required>
+                                <i class="fa-solid fa-eye" id="regConfirmPasswordToggle"></i>
+                            </div>
+                            <span class="error-message" id="regConfirmPasswordError"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regSmsCode">短信验证码</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="regSmsCode" placeholder="请输入验证码" required>
+                                <button type="button" class="sms-btn" id="regSendSmsBtn">发送验证码</button>
+                            </div>
+                            <span class="error-message" id="regSmsCodeError"></span>
+                        </div>
+                        
+                        <div class="form-options">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="regAgreeTerms" required>
+                                <span class="checkmark"></span>
+                                <span>我已阅读并同意<a href="#" class="terms-link">《用户协议》</a>和<a href="#" class="terms-link">《隐私政策》</a></span>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="auth-btn register-btn">
+                            <span class="btn-text">注册</span>
+                            <span class="btn-loader"><i class="fa-solid fa-spinner fa-spin"></i> 注册中...</span>
+                        </button>
+                        
+                        <div class="form-links">
+                            <a href="#" class="back-to-login" id="backToLogin">返回登录</a>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="auth-content auth-panel" id="forgotPasswordPanel">
+                    <div class="auth-header">
+                        <h2>找回密码</h2>
+                        <p>请按照步骤完成密码重置</p>
+                        <div class="divider"></div>
+                    </div>
+                    
+                    <div class="step-indicator">
+                        <div class="step active" id="fpStep1">1</div>
+                        <div class="step-line" id="fpLine1"></div>
+                        <div class="step" id="fpStep2">2</div>
+                        <div class="step-line" id="fpLine2"></div>
+                        <div class="step" id="fpStep3">3</div>
+                    </div>
+                    
+                    <div id="fpStep1Content">
+                        <div class="method-selector">
+                            <button class="method-btn selected" id="fpMethodEmail">
+                                <i class="fa-solid fa-envelope"></i> 邮箱验证
+                            </button>
+                            <button class="method-btn" id="fpMethodPhone">
+                                <i class="fa-solid fa-phone"></i> 手机验证
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <label id="fpIdentifierLabel">注册邮箱</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="fpIdentifier" placeholder="请输入注册邮箱" required>
+                            </div>
+                        </div>
+                        <button class="auth-btn" id="fpSendCode">获取验证码</button>
+                    </div>
+                    
+                    <div id="fpStep2Content" style="display: none;">
+                        <div class="form-group">
+                            <label>验证码</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="fpCode" placeholder="请输入验证码" required>
+                                <button type="button" class="sms-btn" id="fpResendCode">重新发送</button>
+                            </div>
+                        </div>
+                        <button class="auth-btn" id="fpVerifyCode">验证身份</button>
+                    </div>
+                    
+                    <div id="fpStep3Content" style="display: none;">
+                        <div class="form-group">
+                            <label>新密码</label>
+                            <div class="input-wrapper">
+                                <input type="password" id="fpNewPassword" placeholder="请设置新密码" required>
+                            </div>
+                            <div class="password-strength">
+                                <div class="strength-bar"></div>
+                                <div class="strength-bar"></div>
+                                <div class="strength-bar"></div>
+                                <div class="strength-bar"></div>
+                                <div class="strength-bar"></div>
+                            </div>
+                            <div class="strength-text" id="fpStrengthText">请输入密码</div>
+                            <div id="fpStrengthFeedback" class="strength-feedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>确认密码</label>
+                            <div class="input-wrapper">
+                                <input type="password" id="fpConfirmPassword" placeholder="请再次输入密码" required>
+                            </div>
+                        </div>
+                        <button class="auth-btn" id="fpSubmit">确认重置</button>
+                    </div>
+                    
+                    <div class="form-links">
+                        <a href="#" class="back-to-login" id="fpBackToLogin">返回登录</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let resetToken = null;
+        let currentMethod = 'email';
+        let countdownTimer = null;
+        let countdownSeconds = 0;
+
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function validatePhone(phone) {
+            const phoneRegex = /^1[3-9]\d{9}$/;
+            return phoneRegex.test(phone);
+        }
+
+        function generateVerificationCode() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            const feedback = [];
+            
+            if (password.length >= 8) {
+                strength++;
+            } else {
+                feedback.push('密码长度至少8位');
+            }
+            
+            if (password.length >= 12) {
+                strength++;
+            } else {
+                feedback.push('密码长度建议12位以上');
+            }
+            
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) {
+                strength++;
+            } else {
+                feedback.push('密码需包含大小写字母');
+            }
+            
+            if (/\d/.test(password)) {
+                strength++;
+            } else {
+                feedback.push('密码需包含数字');
+            }
+            
+            if (/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)) {
+                strength++;
+            } else {
+                feedback.push('密码建议包含特殊字符');
+            }
+            
+            const levels = ['弱', '一般', '中等', '强', '非常强'];
+            return {
+                strength: strength,
+                level: levels[Math.min(strength, 4)],
+                feedback: feedback
+            };
+        }
+
+        function startCountdown() {
+            countdownSeconds = 60;
+            const sendBtn = document.getElementById('fpSendCode');
+            const resendBtn = document.getElementById('fpResendCode');
+            
+            if (sendBtn) {
+                sendBtn.disabled = true;
+                sendBtn.textContent = `${countdownSeconds}秒后重新发送`;
+            }
+            if (resendBtn) {
+                resendBtn.disabled = true;
+                resendBtn.textContent = `${countdownSeconds}秒后重新发送`;
+            }
+            
+            countdownTimer = setInterval(function() {
+                countdownSeconds--;
+                if (sendBtn) sendBtn.textContent = `${countdownSeconds}秒后重新发送`;
+                if (resendBtn) resendBtn.textContent = `${countdownSeconds}秒后重新发送`;
+                
+                if (countdownSeconds <= 0) {
+                    clearInterval(countdownTimer);
+                    if (sendBtn) {
+                        sendBtn.disabled = false;
+                        sendBtn.textContent = '获取验证码';
+                    }
+                    if (resendBtn) {
+                        resendBtn.disabled = false;
+                        resendBtn.textContent = '重新发送';
+                    }
+                }
+            }, 1000);
+        }
+
+        function stopCountdown() {
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化面板显示状态
+            document.getElementById('loginPanel').style.display = 'block';
+            document.getElementById('smsLoginPanel').style.display = 'none';
+            document.getElementById('institutionPanel').style.display = 'none';
+            document.getElementById('institutionRegisterPanel').style.display = 'none';
+            document.getElementById('registerPanel').style.display = 'none';
+            document.getElementById('forgotPasswordPanel').style.display = 'none';
+            
+            // 短信登录切换
+            document.getElementById('smsLogin').addEventListener('click', function() {
+                document.getElementById('loginPanel').style.display = 'none';
+                document.getElementById('smsLoginPanel').style.display = 'block';
+            });
+            
+            // 机构登录切换
+            document.getElementById('institutionLogin').addEventListener('click', function() {
+                document.getElementById('loginPanel').style.display = 'none';
+                document.getElementById('institutionPanel').style.display = 'block';
+            });
+            
+            // 返回用户登录（从机构登录）
+            document.getElementById('backToNormalLogin').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('institutionPanel').style.display = 'none';
+                document.getElementById('loginPanel').style.display = 'block';
+            });
+            
+            // 返回账号密码登录（从短信登录）
+            document.getElementById('backToAccountLogin').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('smsLoginPanel').style.display = 'none';
+                document.getElementById('loginPanel').style.display = 'block';
+            });
+            
+            // 注册链接
+            document.getElementById('registerLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('loginPanel').style.display = 'none';
+                document.getElementById('registerPanel').style.display = 'block';
+            });
+            
+            // 返回登录
+            document.getElementById('backToLogin').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('registerPanel').style.display = 'none';
+                document.getElementById('institutionRegisterPanel').style.display = 'none';
+                document.getElementById('loginPanel').style.display = 'block';
+            });
+            
+            document.querySelector('.forgot-password').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('loginPanel').style.display = 'none';
+                document.getElementById('forgotPasswordPanel').style.display = 'block';
+                resetStep(1);
+            });
+
+            document.getElementById('instForgotPassword').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('institutionPanel').style.display = 'none';
+                document.getElementById('forgotPasswordPanel').style.display = 'block';
+                resetStep(1);
+            });
+
+            document.getElementById('fpBackToLogin').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('forgotPasswordPanel').style.display = 'none';
+                document.getElementById('loginPanel').style.display = 'block';
+            });
+
+            document.getElementById('fpMethodEmail').addEventListener('click', function() {
+                currentMethod = 'email';
+                this.classList.add('selected');
+                document.getElementById('fpMethodPhone').classList.remove('selected');
+                document.getElementById('fpIdentifierLabel').textContent = '注册邮箱';
+                document.getElementById('fpIdentifier').placeholder = '请输入注册邮箱';
+            });
+
+            document.getElementById('fpMethodPhone').addEventListener('click', function() {
+                currentMethod = 'phone';
+                this.classList.add('selected');
+                document.getElementById('fpMethodEmail').classList.remove('selected');
+                document.getElementById('fpIdentifierLabel').textContent = '手机号码';
+                document.getElementById('fpIdentifier').placeholder = '请输入手机号码';
+            });
+
+            document.getElementById('fpSendCode').addEventListener('click', function() {
+                const identifier = document.getElementById('fpIdentifier').value;
+                
+                // 验证输入不为空
+                if (!identifier) {
+                    showToast('请输入' + (currentMethod === 'email' ? '注册邮箱' : '手机号码'), 'error');
+                    return;
+                }
+                
+                // 邮箱格式验证
+                if (currentMethod === 'email' && !validateEmail(identifier)) {
+                    showToast('请输入有效的邮箱地址', 'error');
+                    return;
+                }
+                
+                // 手机号格式验证
+                if (currentMethod === 'phone' && !validatePhone(identifier)) {
+                    showToast('请输入有效的手机号码', 'error');
+                    return;
+                }
+                
+                // 检查是否正在倒计时
+                if (countdownSeconds > 0) {
+                    showToast('发送过于频繁，请稍后重试', 'error');
+                    return;
+                }
+                
+                // 模拟检查用户是否存在（测试数据）
+                const mockUsers = [
+                    { email: 'test@example.com', phone: '13800138000', username: 'testuser' },
+                    { email: 'admin@example.com', phone: '13900139000', username: 'admin' }
+                ];
+                
+                const userExists = mockUsers.some(u => 
+                    (currentMethod === 'email' && u.email === identifier) ||
+                    (currentMethod === 'phone' && u.phone === identifier)
+                );
+                
+                if (!userExists) {
+                    showToast(currentMethod === 'email' ? '该邮箱未注册' : '该手机号未注册', 'error');
+                    return;
+                }
+                
+                // 生成验证码
+                const code = generateVerificationCode();
+                
+                // 存储验证码（有效期15分钟）
+                localStorage.setItem('resetCode', code);
+                localStorage.setItem('resetCodeExpires', Date.now() + 15 * 60 * 1000);
+                localStorage.setItem('resetIdentifier', identifier);
+                localStorage.setItem('resetMethod', currentMethod);
+                
+                // 模拟发送验证码
+                console.log(`【验证码】发送到${currentMethod === 'email' ? '邮箱' : '手机'} ${identifier}：${code}`);
+                alert(`验证码已发送！\n验证码：${code}\n有效期：15分钟`);
+                
+                showToast(`验证码已发送至您的${currentMethod === 'email' ? '邮箱' : '手机'}，有效期15分钟`, 'success');
+                startCountdown();
+                resetStep(2);
+            });
+
+            document.getElementById('fpResendCode').addEventListener('click', function() {
+                // 检查是否正在倒计时
+                if (countdownSeconds > 0) {
+                    showToast('发送过于频繁，请稍后重试', 'error');
+                    return;
+                }
+                
+                const identifier = document.getElementById('fpIdentifier').value;
+                const code = generateVerificationCode();
+                
+                localStorage.setItem('resetCode', code);
+                localStorage.setItem('resetCodeExpires', Date.now() + 15 * 60 * 1000);
+                
+                console.log(`【验证码】重新发送到${currentMethod === 'email' ? '邮箱' : '手机'} ${identifier}：${code}`);
+                alert(`验证码已重新发送！\n验证码：${code}\n有效期：15分钟`);
+                
+                showToast('验证码已重新发送', 'success');
+                startCountdown();
+            });
+
+            document.getElementById('fpVerifyCode').addEventListener('click', function() {
+                const code = document.getElementById('fpCode').value;
+                
+                if (!code) {
+                    showToast('请输入验证码', 'error');
+                    return;
+                }
+                
+                // 验证验证码
+                const storedCode = localStorage.getItem('resetCode');
+                const expires = localStorage.getItem('resetCodeExpires');
+                
+                if (!storedCode || !expires) {
+                    showToast('请先获取验证码', 'error');
+                    return;
+                }
+                
+                if (Date.now() > expires) {
+                    showToast('验证码已过期，请重新获取', 'error');
+                    return;
+                }
+                
+                if (code !== storedCode) {
+                    showToast('验证码错误', 'error');
+                    return;
+                }
+                
+                // 验证成功
+                resetToken = 'reset_' + Date.now();
+                showToast('身份验证成功，请设置新密码', 'success');
+                resetStep(3);
+            });
+
+            document.getElementById('fpSubmit').addEventListener('click', function() {
+                const newPassword = document.getElementById('fpNewPassword').value;
+                const confirmPassword = document.getElementById('fpConfirmPassword').value;
+                
+                if (!newPassword || !confirmPassword) {
+                    showToast('请填写完整密码信息', 'error');
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    showToast('两次输入的密码不一致', 'error');
+                    return;
+                }
+                
+                // 检查密码强度
+                const strengthResult = checkPasswordStrength(newPassword);
+                if (strengthResult.strength < 3) {
+                    showToast(`密码强度不足（当前为${strengthResult.level}）`, 'error');
+                    document.getElementById('fpStrengthFeedback').innerHTML = strengthResult.feedback.join('<br>');
+                    return;
+                }
+                
+                // 模拟密码重置成功
+                localStorage.removeItem('resetCode');
+                localStorage.removeItem('resetCodeExpires');
+                localStorage.removeItem('resetIdentifier');
+                localStorage.removeItem('resetMethod');
+                
+                showToast('密码重置成功，请使用新密码登录', 'success');
+                setTimeout(() => {
+                    document.getElementById('forgotPasswordPanel').style.display = 'none';
+                    document.getElementById('loginPanel').style.display = 'block';
+                }, 2000);
+            });
+
+            document.getElementById('fpNewPassword').addEventListener('input', function() {
+                const password = this.value;
+                const strengthResult = checkPasswordStrength(password);
+                updatePasswordStrength(strengthResult.strength, strengthResult.level, strengthResult.feedback);
+            });
+        });
+
+        function resetStep(step) {
+            document.getElementById('fpStep1Content').style.display = step === 1 ? 'block' : 'none';
+            document.getElementById('fpStep2Content').style.display = step === 2 ? 'block' : 'none';
+            document.getElementById('fpStep3Content').style.display = step === 3 ? 'block' : 'none';
+            
+            document.getElementById('fpStep1').className = 'step' + (step === 1 ? ' active' : step > 1 ? ' completed' : '');
+            document.getElementById('fpStep2').className = 'step' + (step === 2 ? ' active' : step > 2 ? ' completed' : '');
+            document.getElementById('fpStep3').className = 'step' + (step === 3 ? ' active' : '');
+            
+            document.getElementById('fpLine1').className = 'step-line' + (step > 1 ? ' completed' : '');
+            document.getElementById('fpLine2').className = 'step-line' + (step > 2 ? ' completed' : '');
+        }
+
+        function updatePasswordStrength(strength, level, feedback) {
+            const bars = document.querySelectorAll('.strength-bar');
+            const text = document.getElementById('fpStrengthText');
+            
+            bars.forEach((bar, index) => {
+                bar.className = 'strength-bar';
+                if (index < strength) {
+                    if (strength <= 1) bar.classList.add('weak');
+                    else if (strength <= 2) bar.classList.add('fair');
+                    else if (strength <= 3) bar.classList.add('medium');
+                    else bar.classList.add('strong');
+                }
+            });
+            
+            text.textContent = '密码强度：' + level;
+            text.className = 'strength-text';
+            if (strength <= 1) text.classList.add('weak');
+            else if (strength <= 2) text.classList.add('fair');
+            else if (strength <= 3) text.classList.add('medium');
+            else text.classList.add('strong');
+            
+            document.getElementById('fpStrengthFeedback').innerHTML = feedback.join('<br>');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
