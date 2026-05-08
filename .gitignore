@@ -1,0 +1,53 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+.Python
+
+# 虚拟环境
+venv/
+.venv/
+env/
+ENV/
+
+# ===== 环境变量 / 密钥 =====
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# ===== 数据库 =====
+*.db
+*.sqlite
+*.sqlite3
+
+# ===== Node / 前端 =====
+node_modules/
+dist/
+dist-ssr/
+*.local
+.npm
+.eslintcache
+.parcel-cache
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.swp
+*.swo
+.cache/
+
+# ===== 系统 =====
+.DS_Store
+Thumbs.db
+
+# ===== 日志 =====
+*.log
+logs/
+
+# ===== 打包产物 =====
+build/
+out/

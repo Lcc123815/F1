@@ -804,31 +804,26 @@
             document.getElementById('fpSendCode').addEventListener('click', function() {
                 const identifier = document.getElementById('fpIdentifier').value;
                 
-                // 验证输入不为空
                 if (!identifier) {
                     showToast('请输入' + (currentMethod === 'email' ? '注册邮箱' : '手机号码'), 'error');
                     return;
                 }
                 
-                // 邮箱格式验证
                 if (currentMethod === 'email' && !validateEmail(identifier)) {
                     showToast('请输入有效的邮箱地址', 'error');
                     return;
                 }
                 
-                // 手机号格式验证
                 if (currentMethod === 'phone' && !validatePhone(identifier)) {
                     showToast('请输入有效的手机号码', 'error');
                     return;
                 }
                 
-                // 检查是否正在倒计时
                 if (countdownSeconds > 0) {
                     showToast('发送过于频繁，请稍后重试', 'error');
                     return;
                 }
                 
-                // 模拟检查用户是否存在（测试数据）
                 const mockUsers = [
                     { email: 'test@example.com', phone: '13800138000', username: 'testuser' },
                     { email: 'admin@example.com', phone: '13900139000', username: 'admin' }
@@ -844,16 +839,13 @@
                     return;
                 }
                 
-                // 生成验证码
                 const code = generateVerificationCode();
                 
-                // 存储验证码（有效期15分钟）
                 localStorage.setItem('resetCode', code);
                 localStorage.setItem('resetCodeExpires', Date.now() + 15 * 60 * 1000);
                 localStorage.setItem('resetIdentifier', identifier);
                 localStorage.setItem('resetMethod', currentMethod);
                 
-                // 模拟发送验证码
                 console.log(`【验证码】发送到${currentMethod === 'email' ? '邮箱' : '手机'} ${identifier}：${code}`);
                 alert(`验证码已发送！\n验证码：${code}\n有效期：15分钟`);
                 
@@ -863,7 +855,6 @@
             });
 
             document.getElementById('fpResendCode').addEventListener('click', function() {
-                // 检查是否正在倒计时
                 if (countdownSeconds > 0) {
                     showToast('发送过于频繁，请稍后重试', 'error');
                     return;
@@ -890,7 +881,6 @@
                     return;
                 }
                 
-                // 验证验证码
                 const storedCode = localStorage.getItem('resetCode');
                 const expires = localStorage.getItem('resetCodeExpires');
                 
@@ -909,7 +899,6 @@
                     return;
                 }
                 
-                // 验证成功
                 resetToken = 'reset_' + Date.now();
                 showToast('身份验证成功，请设置新密码', 'success');
                 resetStep(3);
@@ -929,7 +918,6 @@
                     return;
                 }
                 
-                // 检查密码强度
                 const strengthResult = checkPasswordStrength(newPassword);
                 if (strengthResult.strength < 3) {
                     showToast(`密码强度不足（当前为${strengthResult.level}）`, 'error');
@@ -937,7 +925,6 @@
                     return;
                 }
                 
-                // 模拟密码重置成功
                 localStorage.removeItem('resetCode');
                 localStorage.removeItem('resetCodeExpires');
                 localStorage.removeItem('resetIdentifier');
@@ -954,6 +941,35 @@
                 const password = this.value;
                 const strengthResult = checkPasswordStrength(password);
                 updatePasswordStrength(strengthResult.strength, strengthResult.level, strengthResult.feedback);
+            });
+
+            // ================ 登录对接你的项目（已放在正确位置！） ================
+            const loginForm = document.getElementById('loginForm');
+            loginForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                try {
+                    const res = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await res.json();
+
+                    if (res.ok) {
+                        alert('登录成功！');
+                        window.location.href = '/dashboard.html';
+                    } else {
+                        alert('登录失败：' + (data.detail || '账号密码错误'));
+                    }
+                } catch (err) {
+                    alert('后端未启动，请先启动后端！');
+                    console.log(err);
+                }
             });
         });
 
