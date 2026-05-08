@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS 验证码模块测试</title>
+    <style>
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 { color: #00d4ff; }
+        .test-section {
+            background: #16213e;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 3px solid #00d4ff;
+        }
+        .test-pass { color: #4ade80; }
+        .test-fail { color: #f87171; }
+        .test-section h3 { margin-top: 0; color: #fbbf24; }
+        pre { background: #0f172a; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .summary { font-size: 18px; font-weight: bold; margin: 20px 0; }
+        button {
+            background: #00d4ff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover { background: #00bcd4; }
+        #results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>📱 SMS 验证码模块测试</h1>
+    
+    <div>
+        <button onclick="runAllTests()">运行所有测试</button>
+        <button onclick="runUnitTests()">单元测试</button>
+        <button onclick="runIntegrationTests()">集成测试</button>
+        <button onclick="clearResults()">清除结果</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script src="sms-verify.js"></script>
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function log(message, isError = false) {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.style.color = isError ? '#f87171' : '#4ade80';
+            resultsDiv.appendChild(p);
+        }
+        
+        function logSection(title) {
+            const div = document.createElement('div');
+            div.className = 'test-section';
+            const h3 = document.createElement('h3');
+            h3.textContent = title;
+            div.appendChild(h3);
+            resultsDiv.appendChild(div);
+            return div;
+        }
+        
+        let passed = 0;
+        let failed = 0;
+        
+        function assert(condition, message) {
+            if (condition) {
+                passed++;
+                log(`✅ ${message}`);
+                return true;
+            } else {
+                failed++;
+                log(`❌ ${message}`, true);
+                return false;
+            }
+        }
+        
+        function assertEqual(actual, expected, message) {
+            const condition = actual === expected;
+            if (condition) {
+                passed++;
+                log(`✅ ${message}`);
+            } else {
+                failed++;
+                log(`❌ ${message} (期望: ${expected}, 实际: ${actual})`, true);
+            }
+            return condition;
+        }
+        
+        function assertThrows(fn, expectedCode, message) {
+            try {
+                fn();
+                failed++;
+                log(`❌ ${message} (未抛出异常)`, true);
+                return false;
+            } catch (error) {
+                if (error instanceof SmsVerificationError && error.code === expectedCode) {
+                    passed++;
+                    log(`✅ ${message} (${error.message})`);
+                    return true;
+                } else {
+                    failed++;
+                    log(`❌ ${message} (错误码: ${error.code || error.message})`, true);
+                    return false;
+                }
+            }
+        }
+        
+        function runUnitTests() {
+            clearResults();
+            passed = 0;
+            failed = 0;
+            
+            log('========================================');
+            log('单元测试');
+            log('========================================');
+            
+            testPhoneValidation();
+            testCodeGeneration();
+            testSendCode();
+            testVerifyCode();
+            testAntiBrush();
+            testMaxAttempts();
+            testErrorHandling();
+            testStatusQueries();
+            testCancelCode();
+            testConfig();
+            
+            printSummary();
+        }
+        
+        function runIntegrationTests() {
+            clearResults();
+            passed = 0;
+            failed = 0;
+            
+            log('========================================');
+            log('集成测试');
+            log('========================================');
+            
+            testCompleteFlow();
+            testConcurrentRequests();
+            testErrorRecovery();
+            testDataIsolation();
+            
+            printSummary();
+        }
+        
+        function runAllTests() {
+            clearResults();
+            passed = 0;
+            failed = 0;
+            
+            log('========================================');
+            log('SMS 验证码模块 - 完整测试');
+            log('========================================');
+            
+            testPhoneValidation();
+            testCodeGeneration();
+            testSendCode();
+            testVerifyCode();
+            testAntiBrush();
+            testMaxAttempts();
+            testErrorHandling();
+            testStatusQueries();
+            testCancelCode();
+            testConfig();
+            testCompleteFlow();
+            testConcurrentRequests();
+            testErrorRecovery();
+            testDataIsolation();
+            
+            printSummary();
+        }
+        
+        function testPhoneValidation() {
+            const section = logSection('手机号验证测试');
+            const sms = new SmsVerification();
+            
+            assertEqual(sms.validatePhoneNumber('13812345678').valid, true, '有效手机号 13812345678');
+            assertEqual(sms.validatePhoneNumber('').valid, false, '空字符串应无效');
+            assertEqual(sms.validatePhoneNumber(null).valid, false, 'null 应无效');
+            assertEqual(sms.validatePhoneNumber('123').valid, false, '过短号码应无效');
+            assertEqual(sms.validatePhoneNumber('123456789012').valid, false, '过长号码应无效');
+            assertEqual(sms.validatePhoneNumber('1381234567').valid, false, '10位号码应无效');
+            assertEqual(sms.validatePhoneNumber('12812345678').valid, false, '12开头应无效');
+            assertEqual(sms.validatePhoneNumber('10012345678').valid, false, '100开头应无效');
+            assertEqual(sms.validatePhoneNumber('  13812345678  ').valid, true, '带空格手机号应自动 trim');
+        }
+        
+        function testCodeGeneration() {
+            logSection('验证码生成测试');
+            const sms = new SmsVerification({ codeLength: 6, numericOnly: true });
+            const code = sms.generateCode();
+            
+            assertEqual(typeof code, 'number', '默认生成数字验证码');
+            assert(code >= 100000 && code <= 999999, '6位数字验证码范围 [100000-999999]');
+            
+            const sms4 = new SmsVerification({ codeLength: 4, numericOnly: true });
+            const code4 = sms4.generateCode();
+            assert(code4 >= 1000 && code4 <= 9999, '4位数字验证码范围 [1000-9999]');
+            
+            const smsAlpha = new SmsVerification({ codeLength: 4, numericOnly: false });
+            const codeAlpha = smsAlpha.generateCode();
+            assertEqual(typeof codeAlpha, 'string', '字母数字模式生成字符串');
+            assertEqual(codeAlpha.length, 4, '4位验证码长度正确');
+        }
+        
+        function testSendCode() {
+            logSection('发送验证码测试');
+            const sms = new SmsVerification({
+                codeLength: 6,
+                codeExpireMinutes: 5,
+                sendIntervalSeconds: 60,
+                dailySendLimit: 10
+            });
+            
+            const result1 = sms.sendCode('13812345678');
+            assertEqual(result1.success, true, '首次发送应成功');
+            assertEqual(result1.expireMinutes, 5, '有效期应为5分钟');
+            
+            const status = sms.getCodeStatus('13812345678');
+            assertEqual(status.sent, true, '验证码状态应为已发送');
+            assertEqual(status.status, 'pending', '状态应为 pending');
+            assertEqual(status.remainingAttempts, 5, '应有5次尝试机会');
+        }
+        
+        function testVerifyCode() {
+            logSection('验证码验证测试');
+            const sms = new SmsVerification({ maxVerifyAttempts: 3 });
+            
+            sms.sendCode('13912345678');
+            const code = sms.storage.get('13912345678').code;
+            
+            assertThrows(
+                () => sms.verifyCode('13912345678', '000000'),
+                ErrorCodes.CODE_MISMATCH,
+                '错误验证码应抛出 CODE_MISMATCH'
+            );
+            
+            const result = sms.verifyCode('13912345678', code);
+            assertEqual(result.success, true, '正确验证码应验证成功');
+            
+            assertThrows(
+                () => sms.verifyCode('13912345678', code),
+                ErrorCodes.CODE_EXPIRED,
+                '已验证的验证码再次使用应失败'
+            );
+        }
+        
+        function testAntiBrush() {
+            logSection('防刷机制测试');
+            const sms = new SmsVerification({
+                sendIntervalSeconds: 2,
+                dailySendLimit: 3
+            });
+            
+            sms.sendCode('13712345678');
+            
+            assertThrows(
+                () => sms.sendCode('13712345678'),
+                ErrorCodes.PHONE_RATE_LIMITED,
+                '短时间内重复发送应触发频率限制'
+            );
+            
+            sms.sendCode('13612345678');
+            sms.sendCode('13512345678');
+            
+            assertThrows(
+                () => sms.sendCode('13412345678'),
+                ErrorCodes.PHONE_DAILY_LIMIT,
+                '超过每日限制应触发限制'
+            );
+        }
+        
+        function testMaxAttempts() {
+            logSection('尝试次数限制测试');
+            const sms = new SmsVerification({ maxVerifyAttempts: 3 });
+            
+            sms.sendCode('13512345678');
+            
+            for (let i = 0; i < 2; i++) {
+                try { sms.verifyCode('13512345678', '000000'); } catch (e) {}
+            }
+            
+            assertThrows(
+                () => sms.verifyCode('13512345678', '000000'),
+                ErrorCodes.CODE_MAX_ATTEMPTS,
+                '超过最大尝试次数应锁定'
+            );
+        }
+        
+        function testErrorHandling() {
+            logSection('错误处理测试');
+            const sms = new SmsVerification();
+            
+            assertThrows(() => sms.sendCode('123'), ErrorCodes.INVALID_PHONE, '无效手机号发送应报错');
+            assertThrows(() => sms.verifyCode('123', '123456'), ErrorCodes.INVALID_PHONE, '无效手机号验证应报错');
+            assertThrows(() => sms.verifyCode('13812345678', '123456'), ErrorCodes.CODE_NOT_FOUND, '不存在的验证码应报错');
+        }
+        
+        function testStatusQueries() {
+            logSection('状态查询测试');
+            const sms = new SmsVerification({
+                sendIntervalSeconds: 60,
+                dailySendLimit: 10
+            });
+            
+            let status = sms.getCodeStatus('13812345678');
+            assertEqual(status.status, 'not_sent', '未发送状态应为 not_sent');
+            
+            sms.sendCode('13812345678');
+            status = sms.getCodeStatus('13812345678');
+            assertEqual(status.status, 'pending', '已发送状态应为 pending');
+            assert(typeof status.remainingSeconds === 'number', '应有剩余秒数');
+            assert(typeof status.remainingAttempts === 'number', '应有剩余尝试次数');
+            
+            const sendStatus = sms.getSendStatus('13812345678');
+            assertEqual(sendStatus.canSend, false, '刚发送后不应可再次发送');
+        }
+        
+        function testCancelCode() {
+            logSection('取消验证码测试');
+            const sms = new SmsVerification();
+            
+            sms.sendCode('13812345678');
+            assertEqual(sms.cancelCode('13812345678'), true, '取消应返回 true');
+            assertEqual(sms.storage.has('13812345678'), false, '取消后存储应清空');
+            assertEqual(sms.cancelCode('13812345678'), false, '取消不存在的验证码应返回 false');
+            assertEqual(sms.cancelCode('invalid'), false, '取消无效手机号应返回 false');
+        }
+        
+        function testConfig() {
+            logSection('配置测试');
+            const customConfig = {
+                codeLength: 8,
+                codeExpireMinutes: 10,
+                maxVerifyAttempts: 3,
+                lockoutMinutes: 30,
+                sendIntervalSeconds: 120,
+                dailySendLimit: 5
+            };
+            
+            const sms = new SmsVerification(customConfig);
+            assertEqual(sms.config.codeLength, 8, '自定义验证码长度');
+            assertEqual(sms.config.codeExpireMinutes, 10, '自定义有效期');
+            assertEqual(sms.config.maxVerifyAttempts, 3, '自定义最大尝试');
+            assertEqual(sms.config.lockoutMinutes, 30, '自定义锁定时间');
+            assertEqual(sms.config.sendIntervalSeconds, 120, '自定义发送间隔');
+            assertEqual(sms.config.dailySendLimit, 5, '自定义每日限制');
+        }
+        
+        function testCompleteFlow() {
+            logSection('完整注册流程测试');
+            const sms = new SmsVerification({
+                codeLength: 6,
+                codeExpireMinutes: 5,
+                maxVerifyAttempts: 5,
+                sendIntervalSeconds: 60,
+                dailySendLimit: 10
+            });
+            
+            const testPhone = '13812345678';
+            
+            const result1 = sms.sendCode(testPhone);
+            assertEqual(result1.success, true, 'Step 1: 发送验证码成功');
+            
+            const status = sms.getCodeStatus(testPhone);
+            assertEqual(status.status, 'pending', 'Step 2: 验证码状态正确');
+            
+            const code = sms.storage.get(testPhone).code;
+            const result2 = sms.verifyCode(testPhone, code);
+            assertEqual(result2.success, true, 'Step 3: 验证成功');
+            
+            const finalStatus = sms.getCodeStatus(testPhone);
+            assertEqual(finalStatus.status, 'verified', 'Step 4: 状态更新为已验证');
+        }
+        
+        function testConcurrentRequests() {
+            logSection('并发请求测试');
+            const sms = new SmsVerification({
+                sendIntervalSeconds: 60,
+                dailySendLimit: 10
+            });
+            
+            const phone = '13812345678';
+            let successCount = 0;
+            let failCount = 0;
+            
+            for (let i = 0; i < 5; i++) {
+                try {
+                    sms.sendCode(phone);
+                    successCount++;
+                } catch (e) {
+                    failCount++;
+                }
+            }
+            
+            assertEqual(successCount, 1, '只有首次发送应成功');
+            assertEqual(failCount, 4, '后续4次应失败');
+        }
+        
+        function testErrorRecovery() {
+            logSection('错误恢复测试');
+            const sms = new SmsVerification({ maxVerifyAttempts: 3 });
+            
+            sms.sendCode('13812345678');
+            
+            for (let i = 0; i < 3; i++) {
+                try { sms.verifyCode('13812345678', '000000'); } catch (e) {}
+            }
+            
+            assertThrows(() => sms.verifyCode('13812345678', '000000'), ErrorCodes.CODE_MAX_ATTEMPTS, '超过限制后应锁定');
+            
+            sms.cancelCode('13812345678');
+            const result = sms.sendCode('13812345678');
+            assertEqual(result.success, true, '取消后可重新发送');
+        }
+        
+        function testDataIsolation() {
+            logSection('数据隔离测试');
+            const sms = new SmsVerification({ maxVerifyAttempts: 3 });
+            
+            sms.sendCode('13812345678');
+            sms.sendCode('13912345678');
+            
+            try { sms.verifyCode('13812345678', '000000'); } catch (e) {}
+            
+            const status1 = sms.getCodeStatus('13812345678');
+            const status2 = sms.getCodeStatus('13912345678');
+            
+            assert(status1.remainingAttempts < status2.remainingAttempts, '两手机号尝试次数应独立');
+        }
+        
+        function printSummary() {
+            log('========================================');
+            log(`测试结果: ${passed} 通过, ${failed} 失败`);
+            log('========================================');
+            
+            const summary = document.createElement('div');
+            summary.className = 'summary';
+            summary.style.color = failed === 0 ? '#4ade80' : '#f87171';
+            summary.textContent = failed === 0 ? '🎉 所有测试通过!' : '⚠️ 部分测试失败';
+            resultsDiv.insertBefore(summary, resultsDiv.firstChild);
+        }
+        
+        function clearResults() {
+            resultsDiv.innerHTML = '';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# ============== 必装：核心后端 ==============
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic>=2
+python-dotenv
+bcrypt
+PyJWT
+
+# ============== 必装：数据/算法 ==============
+pandas
+numpy
+akshare         # 个股新闻 / 基本面（舆情模块依赖）
+
+# ============== 可选：HuggingFace 情感模型 ==============
+# 安装后舆情模块自动切换到 HF 模式，否则使用内置词典回退
+# transformers>=4.30
+# torch          # CPU 版即可：pip install torch --index-url https://download.pytorch.org/whl/cpu
